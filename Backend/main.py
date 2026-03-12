@@ -1,3 +1,4 @@
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -28,6 +29,7 @@ task_id_counter = 1
 class Task(BaseModel):
     title: str
     completed: bool = False
+    priority: str = "Medium"   # NEW FIELD
 
 
 # Serve React app
@@ -44,7 +46,8 @@ def add_task(task: Task):
     new_task = {
         "id": task_id_counter,
         "title": task.title,
-        "completed": task.completed
+        "completed": task.completed,
+        "priority": task.priority   # STORE PRIORITY
     }
 
     tasks.append(new_task)
@@ -53,25 +56,44 @@ def add_task(task: Task):
     return new_task
 
 
-# Get all tasks
+# Get all tasks (sorted by priority)
 @app.get("/tasks")
 def list_tasks():
-    return tasks
+
+    priority_order = {
+        "High": 0,
+        "Medium": 1,
+        "Low": 2
+    }
+
+    sorted_tasks = sorted(
+        tasks,
+        key=lambda x: priority_order.get(x["priority"], 1)
+    )
+
+    return sorted_tasks
 
 
 # Mark task as complete
 @app.put("/tasks/{task_id}/complete")
 def complete_task(task_id: int):
+
     for task in tasks:
         if task["id"] == task_id:
             task["completed"] = True
             return task
+
     return {"error": "Task not found"}
 
 
 # Delete task
 @app.delete("/tasks/{task_id}")
 def delete_task(task_id: int):
+
     global tasks
     tasks = [task for task in tasks if task["id"] != task_id]
+
     return {"message": "Task deleted"}
+
+
+

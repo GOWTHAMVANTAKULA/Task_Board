@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 
 function App() {
@@ -6,6 +7,7 @@ function App() {
 
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
+  const [priority, setPriority] = useState("Medium");   // NEW STATE
 
   // Fetch tasks from backend
   const fetchTasks = () => {
@@ -28,12 +30,16 @@ function App() {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ title: newTask })
+      body: JSON.stringify({
+        title: newTask,
+        priority: priority    // SEND PRIORITY
+      })
     })
       .then(res => res.json())
       .then(task => {
         setTasks([...tasks, task]);
         setNewTask("");
+        setPriority("Medium");
       });
   };
 
@@ -63,6 +69,12 @@ function App() {
 
   const completedCount = tasks.filter(t => t.completed).length;
   const progress = tasks.length ? (completedCount / tasks.length) * 100 : 0;
+
+  const priorityColor = {
+    High: "#ff4d4d",
+    Medium: "#ffa500",
+    Low: "#28a745"
+  };
 
   return (
 
@@ -110,6 +122,23 @@ function App() {
               borderRadius: "6px"
             }}
           />
+
+          {/* PRIORITY DROPDOWN */}
+
+          <select
+            value={priority}
+            onChange={(e) => setPriority(e.target.value)}
+            style={{
+              marginLeft: "10px",
+              padding: "10px",
+              borderRadius: "6px",
+              border: "1px solid #ccc"
+            }}
+          >
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
 
           <button
             onClick={addTask}
@@ -161,6 +190,13 @@ function App() {
 
                 <span>
                   {task.title}
+                  <span style={{
+                    marginLeft: "8px",
+                    color: priorityColor[task.priority],
+                    fontWeight: "bold"
+                  }}>
+                    ({task.priority})
+                  </span>
                 </span>
 
               </div>
@@ -224,3 +260,7 @@ function App() {
 }
 
 export default App;
+
+
+
+
